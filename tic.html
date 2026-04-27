@@ -37,6 +37,19 @@
     .cell:hover {
       background-color: #f0f0f0;
     }
+    .cell.occupied:hover {
+      background-color: white;
+      cursor: default;
+    }
+    .winning-cell {
+      background-color: #d4edda !important;
+      color: #155724 !important;
+    }
+    #statusIndicator {
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
     .winner {
       color: green;
       font-size: 1.2rem;
@@ -58,6 +71,7 @@
 </head>
 <body>
   <h1>Tic Tac Toe</h1>
+  <div id="statusIndicator">Player X's Turn</div>
   <div class="board" id="board"></div>
   <div class="winner" id="winnerText"></div>
   <button id="resetBtn">Restart Game</button>
@@ -65,6 +79,7 @@
   <script>
     const board = document.getElementById("board");
     const winnerText = document.getElementById("winnerText");
+    const statusIndicator = document.getElementById("statusIndicator");
     const resetBtn = document.getElementById("resetBtn");
 
     let currentPlayer = "X";
@@ -86,20 +101,28 @@
 
       cells[index] = currentPlayer;
       e.target.textContent = currentPlayer;
+      e.target.classList.add("occupied");
 
-      if (checkWinner()) {
+      const winPattern = checkWinner();
+      if (winPattern) {
         winnerText.textContent = `🎉 Player ${currentPlayer} Wins!`;
+        statusIndicator.textContent = "Game Over";
         gameActive = false;
+        winPattern.forEach(idx => {
+          board.children[idx].classList.add("winning-cell");
+        });
         return;
       }
 
       if (!cells.includes("")) {
         winnerText.textContent = "🤝 It's a Draw!";
+        statusIndicator.textContent = "Game Over";
         gameActive = false;
         return;
       }
 
       currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusIndicator.textContent = `Player ${currentPlayer}'s Turn`;
     }
 
     function checkWinner() {
@@ -114,10 +137,13 @@
         [2, 4, 6],
       ];
 
-      return winPatterns.some(pattern => {
+      for (const pattern of winPatterns) {
         const [a, b, c] = pattern;
-        return cells[a] && cells[a] === cells[b] && cells[a] === cells[c];
-      });
+        if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+          return pattern;
+        }
+      }
+      return null;
     }
 
     resetBtn.addEventListener("click", () => {
@@ -125,7 +151,12 @@
       currentPlayer = "X";
       gameActive = true;
       winnerText.textContent = "";
-      document.querySelectorAll(".cell").forEach(cell => (cell.textContent = ""));
+      statusIndicator.textContent = "Player X's Turn";
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.textContent = "";
+        cell.classList.remove("occupied");
+        cell.classList.remove("winning-cell");
+      });
     });
   </script>
 </body>
